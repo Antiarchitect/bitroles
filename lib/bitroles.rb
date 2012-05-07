@@ -47,7 +47,3 @@ module Bitroles
     roles.include? role.to_s
   end
 end
-
-class ActiveRecord::Base
-  include Bitroles
-end
