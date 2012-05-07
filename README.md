@@ -31,17 +31,14 @@ class MyModel < ActiveRecord::Base
   has_roles :admin, :moderator, mask_column: :someothercolumn
 end
 ```
-## Available class methods
-```ruby
-MyModel.with_role(:admin) # Scope that finds all MyModel objects with admin role
-```
-
-## Available instance methods
+## Available methods
 
 ```ruby
-has_role? :admin # Checks if the object has admin role
-is_admin? # Checks the above. It can be is_moderator? or is_whatever? depends on roles given to has_role
-roles # Shows all roles of object (strings array)
+objects = MyModel.with_role(:admin) # Finds all MyModel objects with admin role
+obj = objects.first
+obj.has_role? :admin # Checks if the object has admin role
+obj.is_admin? # Checks the above. It can be is_moderator? or is_whatever? depends on roles given to has_role
+obj.roles # Shows all roles of object (strings array)
 obj.roles = [:admin, :moderator] # Sets admin and moderator role to obj
 obj.admin = true # obj became admin (same for other roles)
 obj.admin = false # obj is no longer an admin (same for other roles)
