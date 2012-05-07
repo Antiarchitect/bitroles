@@ -1,6 +1,6 @@
 # Bitroles
 
-TODO: Write a gem description
+Simple roles for your models without external tables
 
 ## Installation
 
@@ -28,7 +28,7 @@ easy:
 
 ```ruby
 class MyModel < ActiveRecord::Base
-  roles :admin, :moderator, roles_mask: :someothercolumn
+  roles :admin, :moderator, mask_column: :someothercolumn
 end
 ```
 

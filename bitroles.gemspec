@@ -4,7 +4,7 @@ require File.expand_path('../lib/bitroles/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Andrey Voronkov"]
   gem.email         = ["voronkovaa@gmail.com"]
-  gem.description   = %q{Simple roles for your models stored in a bitmask}
+  gem.description   = %q{Simple roles for your models without external tables}
   gem.summary       = "Bitroles gem v#{Bitroles::VERSION}"
   gem.homepage      = "http://github.com/Antiarchitect/bitroles"
 
