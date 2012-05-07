@@ -18,7 +18,19 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+class MyModel < ActiveRecord::Base
+  roles :admin, :moderator
+end
+```
+By default bitroles uses roles_mask integer column in your table to store the roles. You can change column name pretty
+easy:
+
+```ruby
+class MyModel < ActiveRecord::Base
+  roles :admin, :moderator, roles_mask: :someothercolumn
+end
+```
 
 ## Contributing
 
