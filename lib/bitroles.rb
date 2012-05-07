@@ -1,49 +1,57 @@
 require "bitroles/version"
 
 module Bitroles
-  extend ActiveSupport::Concern
-
-  included do
-    scope :with_role, -> role { where("#{mask_column_name} & #{2**roles.index(role.to_s)} > 0") }
+  def self.included(base)
+    base.extend(ClassMethods)
   end
 
   module ClassMethods
-    def roles(*args)
+    def has_roles(*args)
       if args.any?
+        roles_mask = 'roles_mask'
         if args.last.is_a?(Hash)
           options = args.pop if args.last.is_a?(Hash)
-          @@mask_column_name = options[:mask_column].to_s
+          roles_mask = options[:mask_column].to_s
         end
-        @@roles = args.map(&:to_s)
-      else
-        @@roles
+        roles = args.map(&:to_s)
+
+        roles.each do |role|
+          class_eval <<-EVAL, __FILE__, __LINE__
+            scope :with_role, -> role { where(["#{roles_mask} & ? > 0", 2**#{roles}.index(role.to_s)]) }
+
+            def is_#{role}?
+              role? role
+            end
+
+            def #{role}=(val)
+              if val
+                self.roles += [#{role}] unless has_role? #{role}
+              else
+                self.roles -= [#{role}] if has_role? #{role}
+              end
+            end
+          EVAL
+        end
+
+        class_eval <<-EVAL, __FILE__, __LINE__
+          def roles=(roles)
+            roles = (roles.map(&:to_s) & #{roles}).map { |r| 2**#{roles}.index(r) }.sum
+            self.#{roles_mask} = roles
+          end
+
+          def roles
+            #{roles}.reject { |r| ((#{roles_mask} || 0) & 2**#{roles}.index(r)).zero? }
+          end
+
+          def has_role?(role)
+            roles.include? role.to_s
+          end
+        EVAL
       end
     end
-
-    def mask_column_name
-      defined?(@@mask_column_name) ? @@mask_column_name : 'roles_mask'
-    end
   end
+end
 
-  def method_missing(method_sym, *arguments, &block)
-    roles = self.class.roles.join('|')
-    if method_sym.to_s =~ /^is_(#{roles})\?$/
-      role? $1
-    else
-      super
-    end
-  end
-
-  def roles=(roles)
-    roles = (roles.map(&:to_s) & self.class.roles).map { |r| 2**self.class.roles.index(r) }.sum
-    self.send("#{self.class.mask_column_name}=", roles)
-  end
-
-  def roles
-    self.class.roles.reject { |r| ((send(self.class.mask_column_name) || 0) & 2**self.class.roles.index(r)).zero? }
-  end
-
-  def role?(role)
-    roles.include? role.to_s
-  end
+class ActiveRecord::Base
+  include Bitroles
 end
