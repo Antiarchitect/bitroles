@@ -15,9 +15,28 @@ module Bitroles
         end
         roles = args.map(&:to_s)
 
+        class_eval <<-EVAL, __FILE__, __LINE__
+          def self.roles
+            #{roles}
+          end
+
+          def roles=(roles)
+            roles = (roles.map(&:to_s) & #{roles}).map { |r| 2**#{roles}.index(r) }.sum
+            self.#{roles_mask} = roles
+          end
+
+          def roles
+            #{roles}.reject { |r| ((#{roles_mask} || 0) & 2**#{roles}.index(r)).zero? }
+          end
+
+          def has_role?(role)
+            roles.include? role.to_s
+          end
+        EVAL
+
         roles.each do |role|
           class_eval <<-EVAL, __FILE__, __LINE__
-            scope :with_role, -> role { where(["#{roles_mask} & ? > 0", 2**#{roles}.index(role.to_s)]) }
+            scope :#{role.pluralize}, -> { where(['#{roles_mask} & ? > 0', 2**#{roles}.index('#{role}')]) }
 
             def is_#{role}?
               role? role
@@ -32,21 +51,6 @@ module Bitroles
             end
           EVAL
         end
-
-        class_eval <<-EVAL, __FILE__, __LINE__
-          def roles=(roles)
-            roles = (roles.map(&:to_s) & #{roles}).map { |r| 2**#{roles}.index(r) }.sum
-            self.#{roles_mask} = roles
-          end
-
-          def roles
-            #{roles}.reject { |r| ((#{roles_mask} || 0) & 2**#{roles}.index(r)).zero? }
-          end
-
-          def has_role?(role)
-            roles.include? role.to_s
-          end
-        EVAL
       end
     end
   end
