@@ -39,14 +39,14 @@ module Bitroles
             scope :#{role.pluralize}, -> { where(['#{roles_mask} & ? > 0', 2**#{roles}.index('#{role}')]) }
 
             def is_#{role}?
-              role? role
+              role? '#{role}'
             end
 
             def #{role}=(val)
               if val
-                self.roles += [#{role}] unless has_role? #{role}
+                self.roles += ['#{role}'] unless is_#{role}?
               else
-                self.roles -= [#{role}] if has_role? #{role}
+                self.roles -= ['#{role}'] if is_#{role}?
               end
             end
           EVAL
